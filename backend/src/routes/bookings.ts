@@ -14,7 +14,7 @@ const writeLimiter = rateLimit({
   limit: 10,
   standardHeaders: "draft-7",
   legacyHeaders: false,
-  keyGenerator: (req, res) => req.customer?.id ?? ipKeyGenerator(req.ip ?? "", res),
+  keyGenerator: (req) => req.customer?.id ?? ipKeyGenerator(req.ip ?? ""),
   message: { error: "rate_limited" }
 });
 
