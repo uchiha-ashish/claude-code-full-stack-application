@@ -1,0 +1,3 @@
+- [Project map](project_scalpscan_map.md) — monorepo layout, demo customer ids, backend/frontend ports, PRD sections that map to code paths.
+- [Recurring defect patterns](feedback_recurring_defects.md) — backend-computed fields that the frontend silently drops; cross-check `data.*` usage whenever adding a new payload field.
+- [PRD guardrails](reference_prd_sections.md) — where the mandatory disclaimer, band thresholds, phase copy, alcohol-Minox copy, and booking states live.

@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+frontend/next-env.d.ts
+
+# Node build
+dist/
+*.tsbuildinfo
+backend/prisma/seed.js
+backend/prisma/seed.js.map
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Env — NEVER commit secrets
+.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env.local
+
+# Local database (SQLite demo + any stray Postgres dumps)
+backend/prisma/dev.db
+backend/prisma/dev.db-journal
+*.sqlite
+*.sqlite-journal
+*.dump
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Claude Code workspace (keep settings.local.json out of the repo)
+.claude/settings.local.json
+
+# Vercel
+.vercel/
+
+# Test output
+coverage/
+.nyc_output/

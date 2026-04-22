@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  id                  String           @id
+  firstName           String?
+  phoneNumber         String?
+  gender              String?
+  birth               String?
+  email               String?
+  treatmentStartDate  DateTime?
+  onAlcoholMinoxidil  Boolean          @default(false)
+  createdAt           DateTime         @default(now())
+
+  scans               Scan[]
+  bookings            Booking[]
+  treatmentPlan       TreatmentPlan?
+}
+
+model Scan {
+  id                      Int              @id
+  customerId              String
+  clinicId                String
+  scanTimestamp           DateTime
+  firmwareVersion         String?
+  scalpHealthScore        Int
+  hairStrengthScore       Int
+  scalpEnvironmentScore   Int
+  rawPayload              String
+  photos                  String?
+  createdAt               DateTime         @default(now())
+
+  customer                Customer         @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  items                   ScanItemScore[]
+
+  @@index([customerId, scanTimestamp])
+}
+
+model ScanItemScore {
+  id        Int        @id @default(autoincrement())
+  scanId    Int
+  itemKey   String
+  group     String
+  score     Int
+  rawValue  Float?
+  unit      String?
+
+  scan      Scan       @relation(fields: [scanId], references: [id], onDelete: Cascade)
+
+  @@unique([scanId, itemKey])
+}
+
+model Booking {
+  id            Int            @id @default(autoincrement())
+  customerId    String
+  scheduledAt   DateTime
+  status        String         @default("BOOKED")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  customer      Customer       @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId, status])
+}
+
+model TreatmentPlan {
+  customerId       String    @id
+  startDate        DateTime
+  monthlyProducts  String
+
+  customer         Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+}

@@ -1,0 +1,16 @@
+# Railway uses Nixpacks to detect + build Node apps. Explicit config so the
+# Prisma client is generated at build-time and migrations run automatically on
+# each deploy (safe because prisma migrate deploy only applies already-merged
+# migrations, never alters schema on-the-fly).
+
+[phases.setup]
+nixPkgs = ["nodejs_20"]
+
+[phases.install]
+cmds = ["npm ci"]
+
+[phases.build]
+cmds = ["npx prisma generate", "npm run build"]
+
+[start]
+cmd = "npx prisma migrate deploy && npm start"

@@ -1,0 +1,627 @@
+
+
+Traya ScalpScan — Phase 1 PRD
+
+Dashboard Landing Page (Case 1: First Scan, Case 2: Repeat Scan)
+
+
+Owner: Product  |  Source: ScalpScan BRD v1, Phase 1 IA
+
+
+
+1. Overview
+
+Traya operates offline scalp analysis centers equipped with the Becon Pro trichoscopy device. Each scan produces a 13-parameter diagnostic report across 4 scalp zones, plus an overall Scalp Health Score. Today that report is shown to the customer during the center visit and is not carried into the Traya app.
+
+Phase 1 of ScalpScan introduces a single screen inside the Traya app — the ScalpScan Dashboard landing page. It is the first thing a customer sees when they open ScalpScan. It renders in one of two states: Case 1 (customer has exactly one scan on record) or Case 2 (customer has two or more scans and a trend to show). The Dashboard summarizes scan results, sets treatment-timeline expectations, drives the next scan booking, and hooks into the AI Nutritionist.
+
+This PRD defines the business context, objectives, score foundations, scoped components, product guardrails, data requirements, and acceptance criteria for Phase 1. Design is handled in a separate deliverable.
+
+
+
+2. Business Context & Problem Statement
+
+
+2.1 Current state
+
+
+Becon Pro scans produce a detailed 13-parameter report shown on-screen at the center; there is no persistence into the Traya app.
+
+
+The Becon report includes clinically irrelevant parameters (Hair Odor, Scalp Heat, Gray Hair) alongside critical ones, with no hierarchy or prioritization.
+
+
+Customers cannot view historical reports, cannot track progress over time, and have no connection between their scan results and the products they are prescribed.
+
+
+Becon's Hair Loss Index uses an inverted scale (higher = worse) while the Scalp Health Score uses higher = better, creating consumer confusion.
+
+
+2.2 Problems Phase 1 addresses
+
+#
+
+Problem
+
+Impact
+
+P1
+
+No longitudinal tracking between visits
+
+High treatment abandonment during the 8–16 week lag before visible hair regrowth
+
+P2
+
+Clinically irrelevant items inflate the overall score
+
+Customers with severe hair loss but good odor/heat see misleadingly moderate scores
+
+P3
+
+Inverted Hair Loss Index causes anxiety
+
+89% Hair Loss Index sounds catastrophic; the same data framed positively is more motivating
+
+P4
+
+No visibility into monthly treatment progression
+
+Customers don't know what their plan is doing for them in any given month
+
+
+2.3 Business opportunity
+
+By bringing scan data into the app as a progress-tracking Dashboard with forward-looking monthly goals and a clear path to the next scan, Traya can reduce treatment abandonment by showing early scalp-environment improvements before hair regrowth is visible, increase product adherence by making each month's plan visible, drive repeat center visits by creating a reason to re-scan, and position the app as a data-driven health platform rather than a product catalog.
+
+
+
+3. Objectives & Success Metrics
+
+Objective
+
+Metric
+
+Target
+
+Measurement
+
+Increase treatment retention
+
+% customers completing the 6-month plan
+
++15% vs. baseline
+
+Cohort: customers with vs. without ScalpScan tracking
+
+Drive repeat center visits
+
+Avg visits per customer per year
+
+3+ visits/year (from ~1.5)
+
+Center visit data
+
+Improve product adherence
+
+% customers consistently using prescribed products at 3 months
+
++20% vs. baseline
+
+App refill/reorder data
+
+Boost center-visit satisfaction
+
+NPS score for center-visit experience
+
++10 points
+
+Post-visit NPS survey
+
+These are the metrics the full ScalpScan initiative will be held to. Phase 1 alone will not fully move them — they are properties of the complete experience — but the Dashboard is the highest-traffic screen in the ScalpScan flow and carries most of the weight on comprehension, motivation, and re-scan intent.
+
+
+
+4. Score System
+
+
+4.1 Architecture
+
+Level
+
+Score
+
+Source
+
+Rule
+
+Primary
+
+Scalp Health Score (0–100)
+
+Becon composite
+
+Used as-is. One source of truth. Never recalculated by Traya.
+
+Secondary
+
+Hair Strength Score (0–100)
+
+Traya-computed
+
+Average of 4 item scores: Density, Follicle Fullness, Thickness, Fullness
+
+Secondary
+
+Scalp Environment Score (0–100)
+
+Traya-computed
+
+Average of 4 item scores: Calm, Hydration, Oil Balance, Clarity
+
+Tertiary
+
+8 item scores
+
+Becon as-is
+
+Relabeled for consumers (see 4.2)
+
+
+4.2 The 8 consumer-facing parameters
+
+Becon produces 13 parameters. Phase 1 retains 8 and discards 4 (Hair Odor, Scalp Heat, Gray Hair, Hair Loss Index). Consumer labels below are what the app displays; the underlying Becon field is preserved in the data model.
+
+Group
+
+Consumer label
+
+Becon source
+
+Hair Strength
+
+Hair Density
+
+Follicle Density
+
+Hair Strength
+
+Follicle Fullness
+
+Hairs Per Follicle
+
+Hair Strength
+
+Hair Thickness
+
+Hair Thickness
+
+Hair Strength
+
+Hair Fullness
+
+Hair Volume
+
+Scalp Environment
+
+Scalp Calm
+
+Sensitivity
+
+Scalp Environment
+
+Scalp Hydration
+
+Moisture
+
+Scalp Environment
+
+Scalp Oil Balance
+
+Sebum
+
+Scalp Environment
+
+Scalp Clarity
+
+Dandruff
+
+
+4.3 Rating bands
+
+Applied uniformly to every score, at every level.
+
+Range
+
+Label
+
+Meaning
+
+0–50
+
+Warning
+
+Needs immediate attention
+
+50–70
+
+Caution
+
+Improvement needed
+
+70–86
+
+Normal
+
+On track
+
+86–100
+
+Healthy
+
+Excellent condition
+
+
+4.4 Calculation rules
+
+
+Hair Strength Score = (Density + Follicle Fullness + Thickness + Fullness) ÷ 4, rounded to nearest integer.
+
+
+Scalp Environment Score = (Calm + Hydration + Oil Balance + Clarity) ÷ 4, rounded to nearest integer.
+
+
+Rounding is applied after averaging, never before.
+
+
+No decimals are ever displayed to the consumer.
+
+
+
+5. Scope — The Dashboard
+
+Phase 1 delivers a single screen: the ScalpScan Dashboard. It renders in one of two mutually exclusive states — Case 1 (first scan) or Case 2 (repeat scan) — determined by the number of scans on record for the customer.
+
+
+5.1 Shared components (both cases)
+
+
+Book-next-scalptest component (two variant states — premature or mature; see 5.4).
+
+
+AI Nutritionist discoverability card — includes a description and a one-line statement on diet's impact on hair regrowth per Traya science.
+
+
+All scores render as "higher = better" with the rating bands from 4.3.
+
+
+Mandatory disclaimer visible at the bottom of the screen (see 7.2).
+
+
+5.2 Case 1 — First scan (baseline)
+
+Customer has exactly one scan on record. No historical data, no trend, no deltas.
+
+Dashboard components, in order from top to bottom:
+
+
+Scan timestamp — date and time of the most recent scan (e.g. "Scan: 21 Apr 2026, 11:40 AM").
+
+
+Next scalptest booking pill — if a booking exists, show date, time, and reschedule CTA, plus a one-line rationale on why regular scans matter.
+
+
+Scalp Health Score — primary display. Large circular ring, score in the center, /100 label, rating badge.
+
+
+Hair Strength and Scalp Environment scores — two cards, each with score, /100 label, rating badge, and a subtitle naming the 4 parameters that compose the score.
+
+
+Test summary — structured into two sub-sections:
+
+
+"Good things" — parameters rated Normal or Healthy (score ≥70). Each row shows parameter name, short description, expectation-setting on time to maintain or further improve.
+
+
+"Improvement areas" — parameters rated Warning or Caution (score <70). Each row shows parameter name, short description, expectation-setting on time to improve per Traya treatment science.
+
+
+This month and next month's goal — month-wise product pills from the customer's active treatment plan, plus a one-line explanation of how Traya's multi-lever approach works.
+
+
+Book-next-scalptest component (premature or mature state, per 5.4).
+
+
+AI Nutritionist discoverability card.
+
+
+5.3 Case 2 — Repeat scan (has historical data)
+
+Customer has two or more scans. The Dashboard leads with trend rather than a snapshot.
+
+Dashboard components, in order from top to bottom:
+
+
+Next scalptest booking pill — same rules as Case 1.
+
+
+Scalp Health Score trend — multi-visit line chart. Tap any data point to reveal the exact score and scan date.
+
+
+Hair Strength trend — line chart, followed by two sub-sections:
+
+
+"Good things" — parameters that improved since the previous visit. Each row shows parameter name, description, expectation on continued improvement.
+
+
+"Ongoing improvement" — parameters that degraded since the previous visit. Each row shows parameter name, description, expectation on how long recovery typically takes.
+
+
+Scalp Environment trend — same structure as Hair Strength (trend line, then improved and degraded sub-sections).
+
+
+This month and next month's goal — month-wise product pills + the one-line explanation.
+
+
+Book-next-scalptest component (premature or mature state).
+
+
+AI Nutritionist discoverability card.
+
+
+5.4 Book-next-scalptest component states
+
+State
+
+When
+
+Contents
+
+Premature
+
+Less than 25 days since the latest scan
+
+Soft informational note: "Best time to book is 25–30 days after your last scan on [date]." Includes the one-line rationale on regular scans. No sticky CTA.
+
+Mature
+
+25 days or more since the latest scan
+
+Sticky CTA to book the next scan. Includes the one-line rationale on regular scans. Primary action on the screen.
+
+
+5.5 Book-next-scalptest rationale copy
+
+The one-line rationale appears in both states of the booking component and should set the expectation that regular scans are how progress is measured. Specific copy to be finalized with the medical team; the placeholder is: "Regular scans help you and your Traya doctor track progress and adjust your plan."
+
+
+
+6. This Month + Next Month Goal
+
+This component appears in both Case 1 and Case 2 and renders the customer's treatment plan as month-wise product pills for the current month and the upcoming month. The copy surrounding the pills is shaped by the treatment timeline the customer is currently in.
+
+
+6.1 Phase-based messaging
+
+The treatment phase is computed from the customer's treatment start date and shapes the one-line explanation shown alongside the product pills.
+
+Timeframe
+
+Messaging
+
+Weeks 0–8
+
+Treatment focuses on creating the right scalp environment for growth. Scalp Health Score should improve first (calmer, hydrated, balanced). Hair Strength will likely not move yet — that is normal and expected.
+
+Weeks 8–16
+
+Growth response phase. Watch for improvements in Hair Thickness and Follicle Fullness. Hair Strength should start to climb.
+
+Weeks 16+
+
+Results become visible. Hair Strength reflects real changes in how hair is growing. The biggest gains are typically between months 4 and 8.
+
+
+
+7. Product Guardrails
+
+
+7.1 Language rules
+
+
+Never use diagnostic language such as "You have androgenetic alopecia" or "Your condition is X."
+
+
+Never claim treatment efficacy such as "Your treatment is working." The score is one input; only a doctor can make that call.
+
+
+Never compare to other customers ("You are better than 80% of people").
+
+
+Always use directional language: "Your score improved from X to Y," "This area needs attention."
+
+
+Always set timeline expectations: Scalp Environment responds at 4–8 weeks; Hair Strength at 8–16+ weeks. This should shape expectation-setting copy in the Test Summary (Case 1) and degraded-params sections (Case 2).
+
+
+7.2 Mandatory disclaimer
+
+The following disclaimer must be visible at the bottom of the Dashboard, in both cases.
+
+
+"This score is a tracking tool to help you and your Traya team monitor progress. It is not a medical diagnosis. Please consult your Traya doctor for treatment decisions."
+
+
+7.3 Alcohol Minoxidil edge case (Case 2)
+
+Customers on alcohol-based Minoxidil may see temporary declines in Scalp Calm, Scalp Hydration, or Scalp Clarity. This is a known side effect of the alcohol base, not treatment failure. In Case 2, when a parameter in Scalp Environment appears in the "ongoing improvement" (degraded) sub-section and the customer is on alcohol-based Minoxidil, the expectation-setting copy must proactively frame this as an expected, temporary effect rather than a regression — so the customer does not panic.
+
+
+7.4 Source-of-truth rules
+
+
+Scalp Health Score displayed in the app must match the Becon report exactly. It is never recalculated by Traya.
+
+
+Hair Strength and Scalp Environment are computed only by the Traya backend using the formulas in 4.4.
+
+
+All 8 retained item scores come from Becon as-is — only relabeled for consumer display.
+
+
+
+8. Data & Technical Requirements
+
+
+8.1 Required Becon data per scan
+
+Per customer, per scan, the following must flow from Becon into the Traya backend:
+
+
+scalp_health_score (integer 0–100)
+
+
+All 8 retained item scores as 0–100 integers: density_score, hairs_per_follicle_score, thickness_score, volume_score, sensitivity_score, moisture_score, sebum_score, dandruff_score
+
+
+Underlying raw values for the 8 parameters (for data fidelity and future use)
+
+
+scan_timestamp (ISO 8601)
+
+
+customer_id (unique identifier)
+
+
+Becon firmware version (stored per scan to flag cross-version comparisons)
+
+
+8.2 Traya backend calculations
+
+Calculation
+
+Formula
+
+Hair Strength Score
+
+(density_score + hairs_per_follicle_score + thickness_score + volume_score) ÷ 4, rounded to nearest integer
+
+Scalp Environment Score
+
+(sensitivity_score + moisture_score + sebum_score + dandruff_score) ÷ 4, rounded to nearest integer
+
+
+8.3 Treatment-phase computation
+
+The phase used in Section 6.1 messaging is computed from the customer's treatment start date:
+
+
+0 to 56 days since treatment start → Weeks 0–8 messaging
+
+
+57 to 112 days → Weeks 8–16 messaging
+
+
+113+ days → Weeks 16+ messaging
+
+
+8.4 Integration touchpoints
+
+
+Booking API: The booking component requires an API to fetch an existing next-scan booking, create a new booking, and reschedule an existing one.
+
+
+Treatment plan API: The month-wise product pills require the customer's active treatment plan including treatment start date, current-month product list, and next-month product list.
+
+
+AI Nutritionist route: The AI Nutritionist discoverability card routes to the AI Nutritionist entry-point. Deeplink target provided separately.
+
+
+8.5 Edge states
+
+
+No scan on record — the Dashboard is not reachable; the entry-point upstream should guard against this with a booking prompt.
+
+
+Exactly one scan — Case 1 rules apply in full. No trend chart, no deltas.
+
+
+Missing parameter in a scan — exclude the parameter from the group average for that scan and show "Data not available" in the relevant row.
+
+
+Sebum reads 0% — accepted into the Scalp Environment average as a valid Becon reading for Phase 1.
+
+
+No active treatment plan — the month-wise goal component falls back to: "Your plan will appear here once your doctor finalizes it." No empty pills.
+
+
+Cross-version Becon firmware in Case 2 — if the firmware version differs between the scans being compared, the trend charts render normally but an inline note flags that measurement methodology may have changed.
+
+
+
+9. Acceptance Criteria
+
+
+9.1 Functional
+
+
+Scalp Health Score shown in the app matches the Becon report exactly for any given scan.
+
+
+Hair Strength Score is computed as the average of the 4 specified item scores, rounded to integer.
+
+
+Scalp Environment Score is computed as the average of the 4 specified item scores, rounded to integer.
+
+
+Hair Odor, Scalp Heat, Gray Hair, and Hair Loss Index are not displayed anywhere on the Dashboard.
+
+
+All scores display as higher = better with the 4 rating bands (Warning / Caution / Normal / Healthy) and the correct color applied.
+
+
+Case 1 renders when the customer has exactly one scan on record. Case 2 renders when the customer has two or more.
+
+
+Case 2 trend charts render correctly for 2, 3, and 4+ scans.
+
+
+Visit-over-visit deltas (Case 2) are calculated correctly and rendered with the correct arrow direction and color.
+
+
+Book-next-scalptest component correctly switches between premature and mature states based on days since the latest scan.
+
+
+The month-wise goal messaging correctly matches the customer's treatment phase based on treatment start date.
+
+
+Mandatory disclaimer is visible on the Dashboard in both cases.
+
+
+AI Nutritionist discoverability card routes correctly to the AI Nutritionist entry-point.
+
+
+9.2 Performance
+
+
+Dashboard loads within 2 seconds on a 4G connection.
+
+
+Trend charts render smoothly without jank on mid-range Android devices.
+
+
+Historical data for up to 12 scans loads without pagination delay.
+
+
+9.3 Data
+
+
+All 8 retained item scores transfer correctly from Becon to the Traya database, verified by comparing the app display to the Becon report for 20 test scans.
+
+
+Missing parameters are handled gracefully — excluded from the group average and shown as "Data not available."
+
+
+Firmware version is stored alongside every scan.
+
+
